@@ -1,15 +1,30 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { CoinInterface } from "../interfaces/Coin"
 import { Link } from "react-router-dom"
+import { Star } from "lucide-react"
 
 const Coin = ({id, name, symbol, current_price, image, price_change_percentage_24h}: CoinInterface) => {
 
   const [isFavorite, setIsFavorite] = useState<boolean>(false)
   
+  useEffect(() => {
+    const favorites = JSON.parse(localStorage.getItem("favorites") || "[]")
+    setIsFavorite(favorites.includes(id))
+  }, [id])
+  
   const handleFavorites = () => {
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]")
-    setIsFavorite(!isFavorite)
-    localStorage.setItem("favorites", JSON.stringify([...favorites, id]))
+    
+    if (isFavorite) {
+      // Quitar de favoritos
+      const newFavorites = favorites.filter((favId: string) => favId !== id)
+      localStorage.setItem("favorites", JSON.stringify(newFavorites))
+      setIsFavorite(false)
+    } else {
+      // Agregar a favoritos
+      localStorage.setItem("favorites", JSON.stringify([...favorites, id]))
+      setIsFavorite(true)
+    }
   }
 
   return (
@@ -29,9 +44,16 @@ const Coin = ({id, name, symbol, current_price, image, price_change_percentage_2
       <td className="px-6 py-4">
         <button 
           onClick={handleFavorites}
-          className="px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-gray-100 hover:bg-gray-200 text-gray-700"
+          className="p-2 rounded-lg transition-all hover:bg-gray-100"
+          title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
         >
-          {isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
+          <Star 
+            className={`w-6 h-6 transition-colors ${
+              isFavorite 
+                ? "fill-yellow-400 stroke-yellow-400" 
+                : "fill-none stroke-gray-400"
+            }`}
+          />
         </button>
       </td>
     </tr>
